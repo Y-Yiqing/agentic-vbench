@@ -136,7 +136,7 @@ rather than baselining it:
 
 Reproduce from the task directory with
 
-    python3 generator/controls6b.py generator/rig_events.log 4.13
+    python3 generator/controls6b.py generator/rig_events.tsv 4.13
 
 whose first block (30 checkpoints) is the table above. It also prints the same
 attacks on the first 15 minutes, which is a different, easier span and not the

@@ -10,7 +10,7 @@ centre and route, and the event log it writes is the ground truth.
 | `avbcam_init.lua` | the rig mod. Walk, view cone, block palette and its drifting shares, lifetimes, HUD suppression, weather hold, event and camera-pose logging. |
 | `h200_run2.sh` | the capture: reset the world, start Xvfb, server and client, start ffmpeg, drop the GO file the rig waits on, stop everything, report. |
 | `h200_server.conf`, `h200_client.conf` | the settings that matter, notably `fixed_map_seed = 7`, `avb_centre = 0,0`, `node_highlighting = none` and `selectionbox_width = 0` so the client draws no wireframe around the block under the crosshair. |
-| `rig_events.log` | the raw log this recording produced. Columns: time, action, node name, position, extra, camera pose. |
+| `rig_events.tsv` | the raw log this recording produced. Columns: time, action, node name, position, extra, camera pose. |
 | `gt6_fixed.py` | replays that log forward into the census the verifier grades against. |
 | `make_gt3.py` | the log reader and node-name labelling that `gt6_fixed.py` imports. |
 | `judge6.py` | the six-type vocabulary and scorer that `controls6b.py` imports. |
@@ -30,9 +30,9 @@ through the built image:
 ## Reproducing
 
     AVB_LUANTI_ROOT=/path/to/luanti-build bash h200_run2.sh 1800   # capture, needs an x11grab ffmpeg
-    python3 gt6_fixed.py rig_events.log 4.13 write                 # gt_v6_1800.json == steps/solve/tests/census_truth.json
-    python3 project.py rig_events.log unused 4.13                  # on-screen statistics
-    python3 controls6b.py rig_events.log 4.13                      # every attack in calibration/scores.md
+    python3 gt6_fixed.py rig_events.tsv 4.13 write                 # gt_v6_1800.json == steps/solve/tests/census_truth.json
+    python3 project.py rig_events.tsv unused 4.13                  # on-screen statistics
+    python3 controls6b.py rig_events.tsv 4.13                      # every attack in calibration/scores.md
 
 Everything below the capture runs from this directory with no other setup, and the replayed census
 matches the shipped truth in all 180 cells.
