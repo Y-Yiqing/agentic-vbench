@@ -8,9 +8,9 @@ world position maps to a pixel directly. This is the only check that answers
 "was it on screen" rather than "did the pixels change", which camera motion
 and parallax make unanswerable by differencing.
 """
-import json, math, subprocess, sys, numpy as np
+import json, math, os, subprocess, sys, numpy as np
 
-FF = "/scratch/phx7tp/avb_luanti/ff/bin/ffmpeg"
+FF = os.environ.get("FFMPEG", "ffmpeg")   # needs an x11grab-capable build to record, not to project
 W, H = 1280, 720
 FOV_V = math.radians(72.0)
 PITCH = math.radians(-34.0)

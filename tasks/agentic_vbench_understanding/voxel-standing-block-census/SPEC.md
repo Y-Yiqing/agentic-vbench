@@ -2,12 +2,20 @@
 task: voxel/standing-block-census
 
 # 1.
-cognitive_level: understanding
-# Each answer is a state, not an observation. The count of a block type
-# standing at minute twenty depends on every placement and every removal in
-# the preceding twenty minutes, so a missed event is wrong there and wrong at
-# every later checkpoint. Spotting the events is perception and is not
-# sufficient; holding the running state across half an hour is the task.
+cognitive_level: perception
+# Each answer is a state, so a missed event is wrong at its own checkpoint and
+# at every later one. That cascade is not where the agents lose, though.
+# Taking the per-minute change in each cell (each checkpoint minus the one
+# before) removes it, and the strong agent still gets only 15.6 per cent of
+# those changes exactly right and 42.8 per cent within one. Its per-minute
+# total is right in 2 of the 30 minutes, while the mix of types it reports
+# stays close to the truth, a total variation distance of 0.090. It names what
+# it sees; it does not see every change. The bottleneck is detecting dense,
+# small, unannounced changes over a long recording, and the exact cumulative
+# metric widens that gap rather than adding a reasoning step to it. Every
+# removal is in frame when it happens (§5), so none has to be inferred.
+# Perception tasks here must be very hard to justify themselves; §7 and the
+# comparison with minecraft-gameplay-ledger-s1 below are that justification.
 
 # 2.
 modalities_required:
@@ -81,8 +89,9 @@ difficulty:
   # It answered all thirty checkpoints and reported tallying the whole
   # recording, so this is a completed attempt, not an abandoned one. Of the
   # ten cells it placed exactly, nine are in the first three checkpoints and
-  # one at t=1140; nothing later is right. That is the error propagation the
-  # task is built on. The same model given the recording on the host instead
+  # one at t=1140; nothing later is right. The cumulative metric carries each
+  # miss forward, but the misses themselves are per-minute detection failures,
+  # as §1 shows. The same model given the recording on the host instead
   # scored 0.0389 in 74 turns, and the figure reported here is the higher of
   # the two.
   other_agents: >
@@ -111,7 +120,7 @@ anti_shortcut:
 
 # 9.
 input:
-  url: https://huggingface.co/datasets/Maxine668/avb-luanti-standing-census/resolve/main/session.mp4
+  url: https://huggingface.co/datasets/Maxine668/avb-luanti-standing-census/resolve/b026589248041ff49ab3da6b5eed142d13d56d55/session.mp4
   sha256: fbf581836598383a4186554a2604e3a3b412954618070b3d681ccc743cf4a327
   length_min: 30
   resolution: 720
@@ -141,6 +150,27 @@ real attack rather than baselining it.
 | honest tracking that misses 20% | 0.0000 |
 | perfect tracking with the clock 10 s out | 0.4167 |
 | perfect tracking that ignores removals entirely | 0.1556 |
+
+## What this measures that minecraft-gameplay-ledger-s1 does not
+
+Both are first-person voxel footage in which blocks appear and disappear and
+are named by texture, and both are hard because agents fail to recall events.
+They make opposite halves of that easy.
+
+| | minecraft-gameplay-ledger-s1 | this task |
+|---|---|---|
+| event density | 1995 in 238.5 min, 8.4 per minute | 1178 in 30 min, 39.3 per minute |
+| how an event is presented | framed dead-centre with the camera settled on it; a block-break crack grows through each dig; a hit flash marks each kill; the hotbar shows the held item | no cue at all; a block appears or vanishes between two frames while the camera flies on at a constant speed; no hand, no hotbar |
+| where and how large | dead-centre at close range | placements at the crosshair but never paused on; removals anywhere in view, a median 171 px from centre; apparent size a median 24 px for placements and 34 px for removals |
+| naming | 58 block and 9 mob types, including six logs and seven terracottas that are close in colour | six stock textures chosen to be easy to tell apart |
+| answer and scoring | an ordered ledger, matched within 10 s | per-type standing counts at 30 fixed times, exact, no tolerance |
+| what lowers the score | length: 0.36 at 53 min, 0.020 at 238 min | per-event visibility: 0.0556 at 30 min |
+
+The Minecraft task makes each event easy to see and hard to name. This one
+makes each event easy to name and hard to see. The measured failures separate
+the two cleanly: the strong agent's type mix is close to the truth while its
+per-minute event totals are not (§1), which a task that also demands
+fine-grained naming cannot tell apart.
 
 ## How this task was arrived at
 
@@ -184,3 +214,9 @@ draft required the running total to be within two before any cell counted,
 which scored perfect tracking with a five second clock error the same as an
 empty submission. The hardest task already in this family reaches zero because
 its own primary metric reaches 0.026, not because a gate trips.
+
+What moving from a ledger to a state bought is worth stating exactly. It did
+not add a reasoning step: every removal is in frame, so each change can be
+read at the moment it happens. It made the same per-event detection gap cost
+more, because a change missed in one minute stays missed in every later
+count. The per-minute analysis in §1 is how that was established.

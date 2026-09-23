@@ -3,7 +3,7 @@
 # ffmpeg starts first and then drops a GO file; the mod's clock starts when it
 # sees GO, so the log and the video share t=0. Three screen flashes at
 # t=1.0/2.0/4.0 let the alignment be checked afterwards frame by frame.
-R=/scratch/phx7tp/avb_luanti
+R=${AVB_LUANTI_ROOT:?set AVB_LUANTI_ROOT to the Luanti build directory (luanti/, games/, world1/)}
 SECS=${1:-900}
 DISP=:77
 cd "$R" || exit 1

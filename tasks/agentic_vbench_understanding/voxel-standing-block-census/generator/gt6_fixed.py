@@ -9,9 +9,9 @@ the flashes at +3.99 to +4.22 s, which brackets the 4.13 s this arithmetic
 gives, and the placements project a median 52.7 px from the frame centre,
 which they could not do if the clock were out by even a second.
 """
-import json, sys
+import json, os, sys
 from collections import Counter
-sys.path.insert(0, "/scratch/phx7tp/avb_luanti")
+sys.path.insert(0, os.environ.get("AVB_LUANTI_ROOT", os.path.dirname(os.path.abspath(__file__))))
 from make_gt3 import read_log, label
 
 

@@ -28,7 +28,7 @@ RUN mkdir -p /workspace/materials /workspace/output /workspace/work
 # private world seed by a mod written for it, so there is nothing else online
 # that matches and nothing for an agent to look up. Build needs network;
 # solve does not, and allow_internet=false removes it at runtime.
-ARG MEDIA_URL=https://huggingface.co/datasets/Maxine668/avb-luanti-standing-census/resolve/main/session.mp4
+ARG MEDIA_URL=https://huggingface.co/datasets/Maxine668/avb-luanti-standing-census/resolve/b026589248041ff49ab3da6b5eed142d13d56d55/session.mp4
 ARG MEDIA_SHA256=fbf581836598383a4186554a2604e3a3b412954618070b3d681ccc743cf4a327
 RUN apt-get update && apt-get install -y --no-install-recommends curl && \
     curl -fL --retry 5 --retry-delay 5 -o /workspace/materials/session.mp4 "$MEDIA_URL" && \

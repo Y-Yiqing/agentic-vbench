@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Attacks on the v6 census, at whichever span the task ends up using."""
-import sys
+import os, sys
 import numpy as np
 from collections import Counter
-sys.path.insert(0, "/scratch/phx7tp/avb_luanti")
+sys.path.insert(0, os.environ.get("AVB_LUANTI_ROOT", os.path.dirname(os.path.abspath(__file__))))
 from judge6 import TYPES
 from gt6_fixed import build
 

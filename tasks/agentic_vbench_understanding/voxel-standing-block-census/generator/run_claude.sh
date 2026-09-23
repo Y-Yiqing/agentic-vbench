@@ -11,23 +11,34 @@
 set -uo pipefail
 
 ARM=${1:?arm name}; MODEL=${2:?model}
-ROOT=/Users/apple/Desktop/avb_calib_container
-PROMPT=${3:-$ROOT/harness/PROMPT_container.md}
-CT=avb_task
-LOCK=(/Users/apple/Desktop/avb_media_local/luanti_task \
-      /Users/apple/Desktop/avb_media_local/luanti)
+HERE=$(cd "$(dirname "$0")" && pwd)          # this generator/ directory
+ROOT=${AVB_CALIB_ROOT:-$PWD/avb_calib}        # where run directories are written
+PROMPT=${3:-$HERE/PROMPT_container.md}
+IMAGE=${AVB_IMAGE:-avb-standing-census:v6}
+CT=${AVB_CT:-avb_task}
+# Directories holding the ground truth and the generator's own outputs. They are
+# made mode 000 for the whole run. Required, deliberately without a default, so
+# that a calibration cannot silently run unlocked.
+: "${AVB_LOCK_DIRS:?set AVB_LOCK_DIRS to the space-separated directories holding the truth}"
+read -r -a LOCK <<< "$AVB_LOCK_DIRS"
 RUN=$ROOT/run/$ARM; STAGING=$RUN/staging; CWD=$RUN/cwd
 
 rm -rf "$RUN"; mkdir -p "$STAGING" "$CWD"
 cp "$PROMPT" "$RUN/prompt.md"
-sed "s|$ROOT/run/claude/staging|$STAGING|" "$ROOT/harness/mcp_claude.json" > "$RUN/mcp.json"
+python3 - "$HERE/container_mcp.py" "$STAGING" "$CT" > "$RUN/mcp.json" <<'PYJ'
+import json, sys
+proxy, staging, ct = sys.argv[1:4]
+print(json.dumps({"mcpServers": {"task": {
+    "command": "python3", "args": [proxy],
+    "env": {"AVB_STAGING": staging, "AVB_CT": ct}}}}, indent=2))
+PYJ
 
 unlock() { for d in "${LOCK[@]}"; do [ -e "$d" ] && chmod 755 "$d"; done; }
 trap unlock EXIT INT TERM
 
 docker rm -f "$CT" >/dev/null 2>&1
 docker run -d --name "$CT" --network none --cpus 4 --memory 8g \
-  avb-standing-census:v6 sleep infinity >/dev/null || exit 1
+  "$IMAGE" sleep infinity >/dev/null || exit 1
 docker exec "$CT" bash -lc 'rm -rf /workspace/work/* /workspace/output/*; mkdir -p /workspace/work /workspace/output'
 docker exec "$CT" sha256sum /workspace/materials/session.mp4 > "$RUN/media_sha256.txt"
 docker exec "$CT" bash -lc 'python3 -c "import socket;socket.gethostbyname(\"huggingface.co\")"' \

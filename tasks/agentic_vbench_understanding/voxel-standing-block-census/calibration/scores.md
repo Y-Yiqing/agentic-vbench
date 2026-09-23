@@ -72,11 +72,16 @@ Checked inside the container before the run:
 The Codex run answered all thirty checkpoints and reported having tallied the
 whole recording, so it is a completed attempt rather than an abandoned one.
 Its early checkpoints carry most of what it got right and its error grows with
-elapsed time, which is the error propagation the task is built on: of the ten
-cells it placed exactly, nine fall in the first three checkpoints and one at
-t=1140, and nothing after that is right. Raw transcript in
-`rollouts/final/codex-container.jsonl.gz`, its 104 proxied actions in
-`codex-container-tool-calls.log`.
+elapsed time: of the ten cells it placed exactly, nine fall in the first three
+checkpoints and one at t=1140, and nothing after that is right. The growth is
+the cumulative metric carrying each miss forward. The misses themselves happen
+minute by minute. Its per-minute change in each cell is exactly right in 15.6
+per cent of the 180 cells and within one in 42.8 per cent, and its per-minute
+total is right in only 2 of the 30 minutes, while the mix of types it reports
+stays close to the truth (total variation distance 0.090). It names what it
+sees and misses what changes, which is why `SPEC.md` files this task under
+perception. Raw transcript in `rollouts/final/codex-container.jsonl.gz`, its
+104 proxied actions in `codex-container-tool-calls.txt`.
 
 The same model, given the same recording on the host instead, scored 0.0389 in
 74 turns. Working through the proxy it took more turns and scored a little
@@ -129,7 +134,13 @@ rather than baselining it:
 | perfect tracking with the clock 10 s out | 0.4167 |
 | perfect tracking that ignores removals entirely | 0.1556 |
 
-Reproduce with `controls6b.py` against the rig's event log.
+Reproduce from the task directory with
+
+    python3 generator/controls6b.py generator/rig_events.log 4.13
+
+whose first block (30 checkpoints) is the table above. It also prints the same
+attacks on the first 15 minutes, which is a different, easier span and not the
+shipped task.
 
 ## Claude Code (Opus 5) did not finish
 
@@ -140,7 +151,7 @@ second feature pass over those candidates in 51 parallel chunks, then a third
 it had only just started when the budget ran out. `output/solution.json` was
 never written, so the arm scores zero by not finishing rather than by being
 wrong, and the table records it as such. Its 318 proxied actions are in
-`rollouts/final/opus5-container-tool-calls.log` and the transcript in
+`rollouts/final/opus5-container-tool-calls.txt` and the transcript in
 `opus5-container.jsonl.gz`.
 
 The instruction file does not ask for an answer to be written early and
@@ -165,5 +176,11 @@ it undershoots badly, because most of what is standing is out of shot: 289
 at t=1800 against a true 547.
 
 The answer is at `rollouts/final/gemini-container-solution.json`, its 165
-proxied actions at `gemini-container-tool-calls.log`, and the instruction file
-it was given at `gemini-container-instructions.md`.
+proxied actions at `gemini-container-tool-calls.txt`, the instruction file it
+was given at `gemini-container-instructions.md`, and the raw trajectory the
+application wrote, all 320 steps, at `gemini-container.jsonl.gz`. The run was
+started from the application with Gemini 3.8 Flash at medium selected in its
+model menu. That trajectory names no model, so the identity is recorded from
+the conversation's own store: all 160 planner steps carry
+`MODEL_PLACEHOLDER_M319`, the identifier the application saved for that
+selection, and not `M322`, which is what its headless `flash` tier resolves to.
